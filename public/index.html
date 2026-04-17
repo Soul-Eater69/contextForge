@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Context Forge</title>
+    <link rel="icon" type="image/svg+xml" href="/app/favicon.svg" />
+    <link rel="stylesheet" href="/app/app.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <div class="brand-mark">CF</div>
+          <div>
+            <p class="eyebrow">Enterprise Memory OS</p>
+            <h1>Context Forge</h1>
+            <p class="subtle">
+              Grounded retrieval, durable memory, and local agent orchestration
+              in one clean control surface.
+            </p>
+          </div>
+        </div>
+
+        <nav class="nav-stack">
+          <button class="nav-item is-active" data-view="overview">
+            <span>Overview</span>
+            <small>Posture and live state</small>
+          </button>
+          <button class="nav-item" data-view="workspaces">
+            <span>Workspace Studio</span>
+            <small>Repos, snapshots, policy</small>
+          </button>
+          <button class="nav-item" data-view="agent">
+            <span>Agent Console</span>
+            <small>Prompt, ingest, inspect</small>
+          </button>
+          <button class="nav-item" data-view="memory">
+            <span>Memory Center</span>
+            <small>Reusable lessons</small>
+          </button>
+          <button class="nav-item" data-view="integrations">
+            <span>Integrations</span>
+            <small>Claude and local bridge</small>
+          </button>
+          <button class="nav-item" data-view="audit">
+            <span>Audit Trail</span>
+            <small>Sessions and events</small>
+          </button>
+        </nav>
+
+        <section class="sidebar-card">
+          <div class="card-head">
+            <h2>Environment</h2>
+            <p id="statusLine">Connecting...</p>
+          </div>
+          <form id="apiKeyForm" class="stack-list compact-form">
+            <label class="field">
+              <span>API Key</span>
+              <input
+                id="apiKeyInput"
+                type="password"
+                autocomplete="new-password"
+                placeholder="Optional x-api-key"
+              />
+            </label>
+            <div class="inline-actions compact">
+              <button id="saveApiKeyButton" class="ghost" type="submit">Save</button>
+              <button id="refreshButton" class="ghost" type="button">Refresh</button>
+              <button id="seedButton" class="accent" type="button">Seed</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="sidebar-card">
+          <div class="card-head">
+            <h2>Current Selection</h2>
+            <p>Fast prefill for operational forms.</p>
+          </div>
+          <div id="selectionSummary" class="stack-list compact"></div>
+        </section>
+
+        <section class="sidebar-card">
+          <div class="card-head">
+            <h2>Recommended Use</h2>
+          </div>
+          <div class="mini-list">
+            <article class="mini-card">
+              <strong>Local package mode</strong>
+              <p>Best for Claude Code on the same machine.</p>
+            </article>
+            <article class="mini-card">
+              <strong>Docker service mode</strong>
+              <p>Best for shared GUI and team API workflows.</p>
+            </article>
+          </div>
+        </section>
+      </aside>
+
+      <main class="main-shell">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Operational Surface</p>
+            <h2 id="viewTitle">Overview</h2>
+            <p id="viewSummary" class="subtle">
+              Understand system posture, readiness, and current operating mode.
+            </p>
+          </div>
+          <div class="topbar-tools">
+            <label class="search-shell">
+              <span>Search</span>
+              <input id="globalSearch" type="search" placeholder="Find repos, memories, sessions..." />
+            </label>
+            <div class="inline-actions">
+              <button id="heroGuideButton" class="ghost">Open Integrations</button>
+              <button id="heroSeedButton" class="accent">Seed Example Workspace</button>
+            </div>
+          </div>
+        </header>
+
+        <section class="stats-grid" id="statsGrid"></section>
+
+        <section class="view is-active" data-view-panel="overview">
+          <div class="hero-band">
+            <div class="hero-copy">
+              <p class="eyebrow">Control Plane + Data Plane</p>
+              <h3>Make the UI the control room, not a collection of forms.</h3>
+              <p class="subtle large">
+                Context Forge should feel like a serious engineering system:
+                minimal, dark, structured, and immediately useful.
+              </p>
+            </div>
+            <div id="postureGrid" class="posture-grid"></div>
+          </div>
+
+          <div class="overview-grid">
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Operating Modes</h3>
+                <p>How teams should use the product in practice.</p>
+              </div>
+              <div id="modeGrid" class="mode-grid"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Workspace Portfolio</h3>
+                <p>Recently active workspaces and repositories.</p>
+              </div>
+              <div id="workspacePortfolio" class="table-shell"></div>
+            </section>
+
+            <section class="panel panel-wide">
+              <div class="panel-head">
+                <h3>Recent Activity</h3>
+                <p>Latest sessions, memories, snapshots, and audit signals.</p>
+              </div>
+              <div id="recentActivity" class="timeline-shell"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" data-view-panel="workspaces">
+          <div class="studio-grid">
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Explorer</h3>
+                <p>Browse workspaces and repositories.</p>
+              </div>
+              <div id="workspaceExplorer" class="stack-list"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Inspector</h3>
+                <p>Policy, snapshots, jobs, and selection details.</p>
+              </div>
+              <div id="workspaceInspector" class="inspector empty-state">
+                Select a workspace or repository to inspect it here.
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Action Dock</h3>
+                <p>Provision without overwhelming the screen.</p>
+              </div>
+              <div class="segmented" id="provisionTabs">
+                <button class="segmented-item is-active" data-action="switch-provision-tab" data-tab="workspace">Workspace</button>
+                <button class="segmented-item" data-action="switch-provision-tab" data-tab="repository">Repository</button>
+                <button class="segmented-item" data-action="switch-provision-tab" data-tab="tenant">Tenant</button>
+              </div>
+
+              <div class="form-stack">
+                <form id="workspaceForm" class="form-card dock-panel is-active" data-provision-panel="workspace">
+                  <h4>Create Workspace</h4>
+                  <label class="field">
+                    <span>Tenant ID</span>
+                    <input name="tenantId" placeholder="tenant_id" required />
+                  </label>
+                  <label class="field">
+                    <span>Name</span>
+                    <input name="name" placeholder="platform-core" required />
+                  </label>
+                  <div class="field-grid">
+                    <label class="field">
+                      <span>Persistence</span>
+                      <select name="persistenceMode">
+                        <option value="workspace-persistent">workspace-persistent</option>
+                        <option value="ephemeral">ephemeral</option>
+                        <option value="org-shared">org-shared</option>
+                      </select>
+                    </label>
+                    <label class="field">
+                      <span>Storage</span>
+                      <select name="storageMode">
+                        <option value="managed">managed</option>
+                        <option value="byo-object-storage">byo-object-storage</option>
+                      </select>
+                    </label>
+                  </div>
+                  <button class="accent">Create Workspace</button>
+                </form>
+
+                <form id="repositoryForm" class="form-card dock-panel" data-provision-panel="repository">
+                  <h4>Register Repository</h4>
+                  <label class="field">
+                    <span>Workspace ID</span>
+                    <input name="workspaceId" placeholder="workspace_id" required />
+                  </label>
+                  <label class="field">
+                    <span>Name</span>
+                    <input name="name" placeholder="platform-monorepo" required />
+                  </label>
+                  <div class="field-grid">
+                    <label class="field">
+                      <span>Default Branch</span>
+                      <input name="defaultBranch" value="main" required />
+                    </label>
+                    <label class="field">
+                      <span>Source</span>
+                      <select name="sourceKind">
+                        <option value="github-app">github-app</option>
+                        <option value="archive-upload">archive-upload</option>
+                        <option value="cli-sync">cli-sync</option>
+                      </select>
+                    </label>
+                  </div>
+                  <label class="field">
+                    <span>Remote URL</span>
+                    <input name="remoteUrl" placeholder="https://github.com/org/repo" />
+                  </label>
+                  <button class="accent">Register Repository</button>
+                </form>
+
+                <form id="tenantForm" class="form-card dock-panel" data-provision-panel="tenant">
+                  <h4>Create Tenant</h4>
+                  <label class="field">
+                    <span>Name</span>
+                    <input name="name" placeholder="Acme Engineering" required />
+                  </label>
+                  <button class="accent">Create Tenant</button>
+                </form>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" data-view-panel="agent">
+          <div class="console-grid">
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Command Dock</h3>
+                <p>Switch between grounded prompting and snapshot ingestion.</p>
+              </div>
+              <div class="segmented" id="agentTabs">
+                <button class="segmented-item is-active" data-action="switch-agent-tab" data-tab="prompt">Prompt</button>
+                <button class="segmented-item" data-action="switch-agent-tab" data-tab="ingest">Ingest</button>
+              </div>
+
+              <div class="dock-panel is-active" data-agent-panel="prompt">
+                <form id="agentForm" class="form-card embedded">
+                  <div class="field-grid">
+                    <label class="field">
+                      <span>Workspace ID</span>
+                      <input name="workspaceId" placeholder="workspace_id" required />
+                    </label>
+                    <label class="field">
+                      <span>Repository ID</span>
+                      <input name="repositoryId" placeholder="repository_id" required />
+                    </label>
+                  </div>
+                  <div class="field-grid">
+                    <label class="field">
+                      <span>Branch</span>
+                      <input name="branch" value="main" required />
+                    </label>
+                    <label class="field">
+                      <span>Commit SHA</span>
+                      <input name="commitSha" placeholder="optional commit sha" />
+                    </label>
+                  </div>
+                  <label class="field">
+                    <span>Prompt</span>
+                    <textarea
+                      name="prompt"
+                      rows="8"
+                      placeholder="Explain the auth audience validation flow, identify the evidence, and suggest whether the outcome should become durable memory."
+                      required
+                    ></textarea>
+                  </label>
+                  <button class="accent">Run Grounded Agent</button>
+                </form>
+              </div>
+
+              <div class="dock-panel" data-agent-panel="ingest">
+                <form id="archiveForm" class="form-card embedded">
+                  <div class="field-grid">
+                    <label class="field">
+                      <span>Workspace ID</span>
+                      <input name="workspaceId" placeholder="workspace_id" required />
+                    </label>
+                    <label class="field">
+                      <span>Repository ID</span>
+                      <input name="repositoryId" placeholder="repository_id" required />
+                    </label>
+                  </div>
+                  <div class="field-grid">
+                    <label class="field">
+                      <span>Branch</span>
+                      <input name="branch" value="main" required />
+                    </label>
+                    <label class="field">
+                      <span>Commit SHA</span>
+                      <input name="commitSha" placeholder="optional commit sha" />
+                    </label>
+                  </div>
+                  <label class="field">
+                    <span>Archive</span>
+                    <input name="archive" type="file" accept=".zip,.tar,.tgz,.tar.gz,.json" required />
+                  </label>
+                  <button class="accent">Upload And Ingest</button>
+                </form>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Answer Surface</h3>
+                <p>Grounded reply, plan, and memory candidate output.</p>
+              </div>
+              <div id="agentResult" class="result-surface empty-state">
+                Run an agent prompt to inspect the grounded answer.
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Evidence Rail</h3>
+                <p>Snapshot, retrieved context, and selected artifact detail.</p>
+              </div>
+              <div id="evidenceInspector" class="stack-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" data-view-panel="memory">
+          <div class="memory-grid">
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Memory Inventory</h3>
+                <p>Minimal, scannable, workspace-scoped durable knowledge.</p>
+              </div>
+              <div id="memoryList" class="table-shell"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Promotion Dock</h3>
+                <p>Capture only evidence-backed lessons with the right scope.</p>
+              </div>
+              <form id="memoryForm" class="form-card">
+                <div class="field-grid">
+                  <label class="field">
+                    <span>Workspace ID</span>
+                    <input name="workspaceId" placeholder="workspace_id" required />
+                  </label>
+                  <label class="field">
+                    <span>Repository ID</span>
+                    <input name="repositoryId" placeholder="repository_id" required />
+                  </label>
+                </div>
+                <div class="field-grid">
+                  <label class="field">
+                    <span>Branch</span>
+                    <input name="branch" placeholder="optional branch" />
+                  </label>
+                  <label class="field">
+                    <span>Commit SHA</span>
+                    <input name="commitSha" placeholder="optional commit sha" />
+                  </label>
+                </div>
+                <div class="field-grid">
+                  <label class="field">
+                    <span>Scope</span>
+                    <select name="scope">
+                      <option value="workspace">workspace</option>
+                      <option value="org">org</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Type</span>
+                    <select name="type">
+                      <option value="semantic">semantic</option>
+                      <option value="episodic">episodic</option>
+                      <option value="startup">startup</option>
+                      <option value="failure_pattern">failure_pattern</option>
+                      <option value="org-shared">org-shared</option>
+                    </select>
+                  </label>
+                </div>
+                <label class="field">
+                  <span>Title</span>
+                  <input name="title" placeholder="JWT audience mismatch in staging" required />
+                </label>
+                <label class="field">
+                  <span>Summary</span>
+                  <textarea
+                    name="summary"
+                    rows="6"
+                    placeholder="401s occur when staging audience is omitted while validation remains enabled."
+                    required
+                  ></textarea>
+                </label>
+                <label class="field">
+                  <span>Evidence Refs</span>
+                  <input name="evidenceRefs" placeholder="auth.py, settings.py, staging.env" required />
+                </label>
+                <button class="accent">Promote Durable Memory</button>
+              </form>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" data-view-panel="integrations">
+          <div class="integration-grid">
+            <section class="panel panel-wide">
+              <div class="panel-head">
+                <h3>Connector Strategy</h3>
+                <p>Make the usage model obvious: local package first, shared Docker second.</p>
+              </div>
+              <div id="integrationStrategy" class="mode-grid"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Profiles</h3>
+                <p>Saved bridge strategies for local and team workflows.</p>
+              </div>
+              <div id="integrationProfiles" class="stack-list"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Profile Editor</h3>
+                <p>Describe how Context Forge should work with Claude on this machine.</p>
+              </div>
+              <form id="integrationForm" class="form-card">
+                <label class="field">
+                  <span>Profile Name</span>
+                  <input name="name" value="Local Claude Code" required />
+                </label>
+                <div class="field-grid">
+                  <label class="field">
+                    <span>Provider</span>
+                    <select name="provider">
+                      <option value="claude-code-local">claude-code-local</option>
+                      <option value="anthropic-api">anthropic-api</option>
+                      <option value="openai-api">openai-api</option>
+                      <option value="ollama">ollama</option>
+                      <option value="custom-mcp">custom-mcp</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Transport</span>
+                    <select name="transport">
+                      <option value="cli">cli</option>
+                      <option value="api">api</option>
+                      <option value="mcp">mcp</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="field-grid">
+                  <label class="field">
+                    <span>Command</span>
+                    <input name="command" value="claude" />
+                  </label>
+                  <label class="field">
+                    <span>Args</span>
+                    <input name="args" placeholder="space separated args" />
+                  </label>
+                </div>
+                <div class="field-grid">
+                  <label class="field">
+                    <span>Model</span>
+                    <input name="model" value="claude-sonnet-4-5" />
+                  </label>
+                  <label class="field">
+                    <span>Base URL</span>
+                    <input name="baseUrl" placeholder="http://127.0.0.1:4000" />
+                  </label>
+                </div>
+                <div class="field-grid">
+                  <label class="field">
+                    <span>API Key Env Var</span>
+                    <input name="apiKeyEnvVar" value="CONTEXT_FORGE_API_KEY" />
+                  </label>
+                  <label class="field checkbox-row">
+                    <span>Enabled</span>
+                    <input name="enabled" type="checkbox" checked />
+                  </label>
+                </div>
+                <label class="field">
+                  <span>Notes</span>
+                  <textarea
+                    name="notes"
+                    rows="5"
+                    placeholder="Use local package mode for direct Claude Code access; keep Docker for shared dashboard access."
+                  ></textarea>
+                </label>
+                <button class="accent">Save Integration Profile</button>
+              </form>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Claude Setup Guide</h3>
+                <p>Generated environment block and operational notes.</p>
+              </div>
+              <div id="claudeGuide" class="guide-panel empty-state">
+                Save or load an integration profile to generate the local Claude guide.
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" data-view-panel="audit">
+          <div class="audit-grid">
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Activity Timeline</h3>
+                <p>Recent sessions and audit events in one stream.</p>
+              </div>
+              <div id="auditList" class="timeline-shell"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <h3>Session Inspector</h3>
+                <p>Open a session from the activity stream to inspect its notes.</p>
+              </div>
+              <div id="sessionInspector" class="inspector empty-state">
+                Select a session to inspect its recorded notes.
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="panel console-panel">
+          <div class="panel-head">
+            <h3>Console Output</h3>
+            <p>Latest API result from an action in the GUI.</p>
+          </div>
+          <pre id="outputPane">No action yet.</pre>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/app/app.js"></script>
+  </body>
+</html>
